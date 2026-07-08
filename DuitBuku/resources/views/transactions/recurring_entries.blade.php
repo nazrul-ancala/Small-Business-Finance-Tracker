@@ -172,6 +172,21 @@
                                 title="Apply now — creates a transaction for today">
                                 <i class="ri-play-circle-line"></i>
                             </button>
+                            <button class="btn btn-sm btn-outline-secondary btn-toggle-status-recurring ms-1"
+                                data-id="{{ $entry->id }}"
+                                data-desc="{{ $entry->description }}"
+                                data-status="inactive"
+                                title="Pause — stop auto-applying this entry">
+                                <i class="ri-pause-circle-line"></i>
+                            </button>
+                            @else
+                            <button class="btn btn-sm btn-outline-success btn-toggle-status-recurring ms-1"
+                                data-id="{{ $entry->id }}"
+                                data-desc="{{ $entry->description }}"
+                                data-status="active"
+                                title="Resume — allow this entry to auto-apply again">
+                                <i class="ri-play-circle-line"></i>
+                            </button>
                             @endif
                             <button class="btn btn-sm btn-outline-danger btn-delete-recurring ms-1"
                                 data-id="{{ $entry->id }}"
@@ -393,6 +408,43 @@
                     .then(function(res) {
                         if (res.Success) {
                             Swal.fire({ icon: 'success', title: 'Applied!', text: res.Message, timer: 1500, showConfirmButton: false })
+                                .then(function() { location.reload(); });
+                        } else {
+                            Swal.fire({ icon: 'error', title: 'Error', text: res.Message });
+                        }
+                    });
+                });
+            });
+        });
+
+        document.querySelectorAll('.btn-toggle-status-recurring').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                var id     = this.dataset.id;
+                var desc   = this.dataset.desc;
+                var status = this.dataset.status;
+                var isPausing = status === 'inactive';
+                Swal.fire({
+                    title: (isPausing ? 'Pause' : 'Resume') + ' "' + desc + '"?',
+                    text: isPausing
+                        ? 'This entry will stop auto-applying and won\'t show as due until resumed.'
+                        : 'This entry will resume auto-applying when its next date arrives.',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: isPausing ? 'Pause' : 'Resume'
+                }).then(function(result) {
+                    if (!result.isConfirmed) return;
+                    var fd = new FormData();
+                    fd.append('id', id);
+                    fd.append('status', status);
+                    fetch('/transactions/recurring/toggle-status', {
+                        method: 'POST',
+                        headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Accept': 'application/json' },
+                        body: fd
+                    })
+                    .then(function(r) { return r.json(); })
+                    .then(function(res) {
+                        if (res.Success) {
+                            Swal.fire({ icon: 'success', title: isPausing ? 'Paused!' : 'Resumed!', timer: 1200, showConfirmButton: false })
                                 .then(function() { location.reload(); });
                         } else {
                             Swal.fire({ icon: 'error', title: 'Error', text: res.Message });

@@ -42,6 +42,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/transactions/recurring/save',     [manageRecurringEntriesController::class, 'save']);
     Route::post('/transactions/recurring/apply',    [manageRecurringEntriesController::class, 'apply']);
     Route::post('/transactions/recurring/delete',   [manageRecurringEntriesController::class, 'delete']);
+    Route::post('/transactions/recurring/toggle-status', [manageRecurringEntriesController::class, 'toggleStatus']);
 
     Route::get( '/transactions/categories',         [manageCategoriesController::class,       'index'])->name('transactions.categories');
     Route::post('/transactions/categories/save',    [manageCategoriesController::class,       'save']);

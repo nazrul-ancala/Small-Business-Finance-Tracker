@@ -17,8 +17,8 @@ class RecurringEntryController extends Controller
 
         try {
             $pdo  = DB::connection()->getPdo();
-            $stmt = $pdo->prepare('CALL sp_RecurringEntry_CRUD(?,?,?,?,?,?,?,?,?)');
-            $stmt->execute(['GET_ALL', null, null, null, $type, null, null, $frequency, null]);
+            $stmt = $pdo->prepare('CALL sp_RecurringEntry_CRUD(?,?,?,?,?,?,?,?,?,?)');
+            $stmt->execute(['GET_ALL', null, null, null, $type, null, null, $frequency, null, null]);
             $rows = $stmt->fetchAll(\PDO::FETCH_OBJ);
 
             return $this->ok($rows, 'Recurring entry list retrieved successfully.');
@@ -38,8 +38,8 @@ class RecurringEntryController extends Controller
 
         try {
             $pdo  = DB::connection()->getPdo();
-            $stmt = $pdo->prepare('CALL sp_RecurringEntry_CRUD(?,?,?,?,?,?,?,?,?)');
-            $stmt->execute(['GET_BY_ID', $id, null, null, null, null, null, null, null]);
+            $stmt = $pdo->prepare('CALL sp_RecurringEntry_CRUD(?,?,?,?,?,?,?,?,?,?)');
+            $stmt->execute(['GET_BY_ID', $id, null, null, null, null, null, null, null, null]);
             $row  = $stmt->fetch(\PDO::FETCH_OBJ);
 
             if (! $row) {
@@ -67,7 +67,8 @@ class RecurringEntryController extends Controller
                 'update'    => $this->updateEntry($request),
                 'delete'    => $this->deleteEntry($request),
                 'bump_next' => $this->bumpNext($request),
-                default  => $this->fail('Invalid action. Use: save, update, or delete.', 400),
+                'update_status' => $this->updateStatus($request),
+                default  => $this->fail('Invalid action. Use: save, update, delete, bump_next, or update_status.', 400),
             };
         } catch (\Throwable $e) {
             Log::error('POST_RecurringEntry_SaveUpdateDelete', ['action' => $action, 'error' => $e->getMessage()]);
@@ -89,7 +90,7 @@ class RecurringEntryController extends Controller
             return $this->fail('user_id, description, type, category, amount, frequency and start_date are required.', 400);
         }
 
-        $row = $this->callCrud('INSERT', [null, $userId, $description, $type, $category, $amount, $frequency, $startDate]);
+        $row = $this->callCrud('INSERT', [null, $userId, $description, $type, $category, $amount, $frequency, $startDate, null]);
 
         if ($row && $row->Status === 'true') {
             return $this->ok(['id' => $row->NewId ?? null], $row->Message ?? 'Recurring entry saved.');
@@ -113,6 +114,7 @@ class RecurringEntryController extends Controller
             $request->input('amount'),
             $request->input('frequency'),
             null,
+            null,
         ]);
 
         if ($row && $row->Status === 'true') {
@@ -130,7 +132,7 @@ class RecurringEntryController extends Controller
             return $this->fail('id is required.', 400);
         }
 
-        $row = $this->callCrud('DELETE', [$id, null, null, null, null, null, null, null]);
+        $row = $this->callCrud('DELETE', [$id, null, null, null, null, null, null, null, null]);
 
         if ($row && $row->Status === 'true') {
             return $this->ok(null, $row->Message ?? 'Recurring entry deleted.');
@@ -144,7 +146,7 @@ class RecurringEntryController extends Controller
         $id = $request->input('id');
         if (! $id) return $this->fail('id is required.', 400);
 
-        $row = $this->callCrud('BUMP_NEXT', [$id, null, null, null, null, null, null, null]);
+        $row = $this->callCrud('BUMP_NEXT', [$id, null, null, null, null, null, null, null, null]);
 
         if ($row && $row->Status === 'true') {
             return $this->ok(null, $row->Message ?? 'Next date bumped.');
@@ -152,10 +154,27 @@ class RecurringEntryController extends Controller
         return $this->fail($row->Message ?? 'Failed to bump next date.', 400);
     }
 
+    private function updateStatus(Request $request): JsonResponse
+    {
+        $id     = $request->input('id');
+        $status = $request->input('status');
+
+        if (! $id || ! $status) {
+            return $this->fail('id and status are required.', 400);
+        }
+
+        $row = $this->callCrud('UPDATE_STATUS', [$id, null, null, null, null, null, null, null, $status]);
+
+        if ($row && $row->Status === 'true') {
+            return $this->ok(null, $row->Message ?? 'Status updated.');
+        }
+        return $this->fail($row->Message ?? 'Failed to update status.', 400);
+    }
+
     private function callCrud(string $action, array $params): mixed
     {
         $pdo  = DB::connection()->getPdo();
-        $stmt = $pdo->prepare('CALL sp_RecurringEntry_CRUD(?,?,?,?,?,?,?,?,?)');
+        $stmt = $pdo->prepare('CALL sp_RecurringEntry_CRUD(?,?,?,?,?,?,?,?,?,?)');
         $stmt->execute(array_merge([$action], $params));
 
         return $stmt->fetch(\PDO::FETCH_OBJ);

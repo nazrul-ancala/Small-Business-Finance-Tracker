@@ -91,4 +91,15 @@ class manageRecurringEntriesController extends Controller
 
         return response()->json($response);
     }
+
+    public function toggleStatus(Request $request)
+    {
+        $response = $this->callApi('POST', 'RecurringEntry/POST_RecurringEntry_SaveUpdateDelete', [
+            'action' => 'update_status',
+            'id'     => $request->input('id'),
+            'status' => $request->input('status'),
+        ]);
+
+        return response()->json($response);
+    }
 }
