@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Manage;
+namespace App\Http\Controllers\Drawings;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
-class DrawingController extends Controller
+class AllDrawingsController extends Controller
 {
     public function GET_DrawingList(Request $request): JsonResponse
     {
@@ -50,23 +50,6 @@ class DrawingController extends Controller
         } catch (\Throwable $e) {
             Log::error('GET_SpecificDrawing', ['id' => $id, 'error' => $e->getMessage()]);
             return $this->fail('Failed to retrieve drawing.', 500, $e->getMessage());
-        }
-    }
-
-    public function GET_SalarySummary(Request $request): JsonResponse
-    {
-        $year = $request->input('year', date('Y'));
-
-        try {
-            $pdo  = DB::connection()->getPdo();
-            $stmt = $pdo->prepare('CALL sp_Drawing_CRUD(?,?,?,?,?,?,?,?,?)');
-            $stmt->execute(['GET_SALARY_SUMMARY', null, null, null, null, null, null, null, $year]);
-            $rows = $stmt->fetchAll(\PDO::FETCH_OBJ);
-
-            return $this->ok($rows, 'Salary summary retrieved successfully.');
-        } catch (\Throwable $e) {
-            Log::error('GET_SalarySummary', ['error' => $e->getMessage()]);
-            return $this->fail('Failed to retrieve salary summary.', 500, $e->getMessage());
         }
     }
 

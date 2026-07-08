@@ -1,15 +1,16 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Manage\TransactionController;
-use App\Http\Controllers\Manage\CategoryController;
-use App\Http\Controllers\Manage\RecurringEntryController;
-use App\Http\Controllers\Manage\CustomerController;
-use App\Http\Controllers\Manage\InvoiceController;
-use App\Http\Controllers\Manage\PaymentRecordController;
-use App\Http\Controllers\Manage\DrawingController;
-use App\Http\Controllers\Manage\CashflowEntryController;
-use App\Http\Controllers\Manage\PLController;
+use App\Http\Controllers\Transactions\TransactionController;
+use App\Http\Controllers\Categories\CategoryController;
+use App\Http\Controllers\RecurringEntries\RecurringEntryController;
+use App\Http\Controllers\Invoices\CustomerController;
+use App\Http\Controllers\Invoices\InvoiceController;
+use App\Http\Controllers\Invoices\PaymentRecordController;
+use App\Http\Controllers\Drawings\AllDrawingsController;
+use App\Http\Controllers\Drawings\SalarySummaryController;
+use App\Http\Controllers\Cashflow\CashflowEntryController;
+use App\Http\Controllers\Pl\PLController;
 
 Route::get('/health', fn () => response()->json(['Success' => true, 'Message' => 'API is running.']));
 
@@ -46,10 +47,10 @@ Route::middleware('basic.token')->group(function () {
     Route::post('/PaymentRecord/POST_PaymentRecord_SaveUpdateDelete', [PaymentRecordController::class, 'POST_PaymentRecord_SaveUpdateDelete']);
 
     // Drawings
-    Route::get( '/Drawing/GET_DrawingList',               [DrawingController::class,       'GET_DrawingList']);
-    Route::get( '/Drawing/GET_SpecificDrawing',           [DrawingController::class,       'GET_SpecificDrawing']);
-    Route::get( '/Drawing/GET_SalarySummary',             [DrawingController::class,       'GET_SalarySummary']);
-    Route::post('/Drawing/POST_Drawing_SaveUpdateDelete', [DrawingController::class,       'POST_Drawing_SaveUpdateDelete']);
+    Route::get( '/Drawing/GET_DrawingList',               [AllDrawingsController::class,   'GET_DrawingList']);
+    Route::get( '/Drawing/GET_SpecificDrawing',           [AllDrawingsController::class,   'GET_SpecificDrawing']);
+    Route::get( '/Drawing/GET_SalarySummary',             [SalarySummaryController::class, 'GET_SalarySummary']);
+    Route::post('/Drawing/POST_Drawing_SaveUpdateDelete', [AllDrawingsController::class,   'POST_Drawing_SaveUpdateDelete']);
 
     // Cashflow Entries
     Route::get( '/CashflowEntry/GET_CashflowEntryList',               [CashflowEntryController::class, 'GET_CashflowEntryList']);

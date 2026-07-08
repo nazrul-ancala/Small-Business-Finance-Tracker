@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Manage;
+namespace App\Http\Controllers\Cashflow;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
